@@ -12,6 +12,7 @@
     <target name="keystore" depends="">
         <delete file="nbproject/private/keystore" />
         <genkey
+            keyalg="RSA"
             alias="phpcsmd"
             storepass="phpcsmd"
             keystore="nbproject/private/keystore"
