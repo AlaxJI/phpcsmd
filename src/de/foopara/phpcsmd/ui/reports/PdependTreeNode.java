@@ -6,20 +6,20 @@ import java.util.Comparator;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 
-public class PdependTreeNode extends DefaultMutableTreeNode
-{
+public class PdependTreeNode extends DefaultMutableTreeNode {
 
     public PdependTreeNode(Object o) {
         super(o);
     }
 
-    protected static class NodeComparator implements Comparator<PdependTreeNode>, Serializable
-    {
+    protected static class NodeComparator implements Comparator<TreeNode>, Serializable {
+
         public static final long serialVersionUID = 1L;
 
         @Override
-        public int compare(PdependTreeNode o1, PdependTreeNode o2) {
+        public int compare(TreeNode o1, TreeNode o2) {
             if (o1 == null || o1.toString() == null) {
                 return -1;
             }
@@ -36,7 +36,6 @@ public class PdependTreeNode extends DefaultMutableTreeNode
     @Override
     public void insert(MutableTreeNode newChild, int childIndex) {
         super.insert(newChild, childIndex);
-        Collections.<PdependTreeNode>sort(this.children, this.nodeComparator);
+        Collections.<TreeNode>sort(this.children, this.nodeComparator);
     }
-
 }

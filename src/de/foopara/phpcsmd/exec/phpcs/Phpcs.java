@@ -34,43 +34,49 @@ public class Phpcs extends GenericExecute
 
     @Override
     protected GenericResult run(FileObject file, boolean annotations) {
+        Logger.getInstance().debug("run", "phpcsmd");
         Lookup lookup = GenericHelper.getFileLookup(file);
-        if ((Boolean)PhpcsOptions.load(PhpcsOptions.Settings.ACTIVATED, lookup) == false) {
+        PhpcsOptions options = new PhpcsOptions(lookup);
+        if ((Boolean)options.get(PhpcsOptions.Settings.ACTIVATED) == false) {
+            Logger.getInstance().debug("ACTIVATED == false", "phpcsmd");
             return this.setAndReturnCurrent(file);
         }
 
-        if (!GenericHelper.isDesirableFile(new File((String)PhpcsOptions.load(PhpcsOptions.Settings.SCRIPT, lookup)), lookup, false)
+        if (!GenericHelper.isDesirableFile(new File((String)options.get(PhpcsOptions.Settings.SCRIPT)), lookup, false)
                 || !GenericHelper.isDesirableFile(file)) {
+            Logger.getInstance().debug("!isDesirableFile", "phpcsmd");
             return this.setAndReturnDefault(file);
         }
 
         if (this.isEnabled() == false) {
+            Logger.getInstance().debug("not enabled", "phpcsmd");
             return this.setAndReturnCurrent(file);
         }
 
         if (!iAmAlive()) {
+            Logger.getInstance().debug("I am not Alive", "phpcsmd");
             return this.setAndReturnCurrent(file);
         }
 
         CustomStandard cstandard = null;
-        StringBuilder cmd = new StringBuilder(GenericExecute.escapePath((String)PhpcsOptions.load(PhpcsOptions.Settings.SCRIPT, lookup)));
-        if ((Boolean)PhpcsOptions.load(PhpcsOptions.Settings.EXTRAS, lookup) == true
-                || ((String)PhpcsOptions.load(PhpcsOptions.Settings.STANDARD, lookup)).trim().length() == 0) {
+        StringBuilder cmd = new StringBuilder(GenericExecute.escapePath((String)options.get(PhpcsOptions.Settings.SCRIPT)));
+        if ((Boolean)options.get(PhpcsOptions.Settings.EXTRAS) == true
+                || ((String)options.get(PhpcsOptions.Settings.STANDARD)).trim().length() == 0) {
             cstandard = new CustomStandard(lookup);
             this.appendArgument(cmd, "--standard=", cstandard.toString());
         } else {
-            this.appendArgument(cmd, "--standard=", (String)PhpcsOptions.load(PhpcsOptions.Settings.STANDARD, lookup));
+            this.appendArgument(cmd, "--standard=", (String)options.get(PhpcsOptions.Settings.STANDARD));
         }
-        this.appendArgument(cmd, "--sniffs=", (String)PhpcsOptions.load(PhpcsOptions.Settings.SNIFFS, lookup));
-        this.appendArgument(cmd, "--extensions=", (String)PhpcsOptions.load(PhpcsOptions.Settings.EXTENSIONS, lookup));
-        this.appendArgument(cmd, "--ignore=", (String)PhpcsOptions.load(PhpcsOptions.Settings.IGNORES, lookup));
-        this.appendArgument(cmd, "-d ", GenericHelper.implode(" -d ", ((String)PhpcsOptions.load(PhpcsOptions.Settings.INIOVERWRITE, lookup)).split(";")));
+        this.appendArgument(cmd, "--sniffs=", (String)options.get(PhpcsOptions.Settings.SNIFFS));
+        this.appendArgument(cmd, "--extensions=", (String)options.get(PhpcsOptions.Settings.EXTENSIONS));
+        this.appendArgument(cmd, "--ignore=", (String)options.get(PhpcsOptions.Settings.IGNORES));
+        this.appendArgument(cmd, "-d ", GenericHelper.implode(" -d ", ((String)options.get(PhpcsOptions.Settings.INIOVERWRITE)).split(";")));
 
-        if ((Integer)PhpcsOptions.load(PhpcsOptions.Settings.TABWIDTH, lookup) > -1) {
-            cmd.append(" --tab-width=").append((Integer)PhpcsOptions.load(PhpcsOptions.Settings.TABWIDTH, lookup));
+        if ((Integer)options.get(PhpcsOptions.Settings.TABWIDTH) > -1) {
+            cmd.append(" --tab-width=").append((Integer)options.get(PhpcsOptions.Settings.TABWIDTH));
         }
 
-        if ((Boolean)PhpcsOptions.load(PhpcsOptions.Settings.WARNINGS, lookup) == true) {
+        if ((Boolean)options.get(PhpcsOptions.Settings.WARNINGS) == true) {
             cmd.append(" -w");
         } else {
             cmd.append(" -n");
@@ -105,7 +111,7 @@ public class Phpcs extends GenericExecute
             return this.setAndReturnCurrent(file);
         }
 
-        String staticFile = (String)PhpcsOptions.load(PhpcsOptions.Settings.STATIC, lookup);
+        String staticFile = (String)options.get(PhpcsOptions.Settings.STATIC);
         if (!staticFile.isEmpty()) {
             File staticFile2 = new File(staticFile);
             if (staticFile2.exists() && staticFile2.canRead()) {
@@ -121,7 +127,7 @@ public class Phpcs extends GenericExecute
         }
         ViolationRegistry.getInstance().setPhpcs(file, res);
 
-        if ((Boolean)PhpcsOptions.load(PhpcsOptions.Settings.EXTRAS, lookup) && cstandard != null) {
+        if ((Boolean)options.get(PhpcsOptions.Settings.EXTRAS) && cstandard != null) {
             cstandard.delete();
         }
 

@@ -28,11 +28,9 @@ import de.foopara.phpcsmd.generics.GenericHelper;
  *
  * @author nspecht
  */
-abstract public class GenericOption
-{
+abstract public class GenericOption {
 
-    public static enum SettingTypes
-    {
+    public static enum SettingTypes {
 
         BOOLEAN, INTEGER, STRING
 
@@ -58,9 +56,45 @@ abstract public class GenericOption
         GenericOption._modul().put(id, value);
     }
 
+    protected static Properties loadProperties(Lookup lkp) {
+        Properties properties = null;
+        File config = GenericOption.getProjectProperties(lkp);
+        if (config == null) {
+            Logger.getInstance().debug("Config is null.", "Config");
+        }
+
+        if (config != null) {
+            Logger.getInstance().debug(config.getPath(), "Config");
+            properties = new Properties();
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(config);
+                properties.load(fis);
+            } catch (FileNotFoundException ex) {
+                Logger.getInstance().log(ex);
+            } catch (IOException ex) {
+                Logger.getInstance().log(ex);
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException ex) {
+                        Logger.getInstance().log(ex);
+                    }
+                }
+            }
+        }
+        for (Object key : properties.keySet()) {
+            Logger.getInstance().debug(key.toString() + ": " + properties.get(key).toString(), "Properties");
+        }
+
+        return properties;
+    }
+
     protected static String loadProject(String id, String def, Lookup lkp) {
         File config = GenericOption.getProjectProperties(lkp);
         if (config == null) {
+            Logger.getInstance().debug("Config is null. Def is " + def, "Config");
             return def;
         }
 
@@ -193,20 +227,23 @@ abstract public class GenericOption
     protected static File getProjectProperties(Lookup lkp) {
         if (lkp == null) {
             // OK it's null, take it like a man and move on
-            Logger.getInstance().log(new Exception("Lookup is null."), Logger.Severity.USELESS);
+            Logger.getInstance().log(new Exception("Lookup is null."), Logger.Severity.DEBUG);
             return null;
         }
         Project project = GenericHelper.getProjectFromLookup(lkp);
         if (project == null) {
             // You aren't able to find the project lookup? That's sad!
-            Logger.getInstance().log(new Exception("Project was not found in lookup."), Logger.Severity.USELESS);
+            Logger.getInstance().log(new Exception("Project was not found in lookup."), Logger.Severity.DEBUG);
             return null;
         }
 
         FileObject fo = project.getProjectDirectory();
 
+        Logger.getInstance().debug("Project Directory is " + project.getProjectDirectory().getPath());
+
         File config = new File(FileUtil.toFile(fo), "nbproject/private/phpcsmd.xml");
         if (!config.exists()) {
+            Logger.getInstance().debug("project config not found");
             try {
                 if (!config.getParentFile().exists()) {
                     config.getParentFile().mkdirs();
@@ -239,13 +276,13 @@ abstract public class GenericOption
     public static String castValueToString(Object val, SettingTypes type) {
         switch (type) {
             case BOOLEAN:
-                if ((Boolean)val == true) {
+                if ((Boolean) val == true) {
                     return "true";
                 } else {
                     return "false";
                 }
             case INTEGER:
-                return "" + ((Integer)val);
+                return "" + ((Integer) val);
             default:
                 return val.toString();
         }

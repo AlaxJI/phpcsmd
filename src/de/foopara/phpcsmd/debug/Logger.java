@@ -6,14 +6,11 @@ import de.foopara.phpcsmd.option.GeneralOptions;
  *
  * @author nspecht
  */
-public class Logger
-{
-
+public class Logger {
 
     public enum Severity {
-        USELESS, INFO, WARNING, ERROR, EXCEPTION
+        ALL, TRACE, DEBUG, INFO, WARNING, ERROR, FATAL
     }
-
 
     private static volatile Logger instance = null;
 
@@ -26,6 +23,30 @@ public class Logger
 
     protected StringBuilder buff = new StringBuilder();
 
+    public void debug(String str) {
+        this.log(str, null, Severity.DEBUG);
+    }
+
+    public void debug(String str, String caption) {
+        this.log(str, caption, Severity.DEBUG);
+    }
+
+    public void info(String str) {
+        this.log(str);
+    }
+
+    public void info(String str, String caption) {
+        this.log(str, caption);
+    }
+
+    public void warning(String str) {
+        this.log(str, null, Severity.WARNING);
+    }
+
+    public void warning(String str, String caption) {
+        this.log(str, caption, Severity.WARNING);
+    }
+
     public void log(String str) {
         this.log(str, null, Severity.INFO);
     }
@@ -35,15 +56,14 @@ public class Logger
     }
 
     public void log(String str, String caption, Severity severity) {
-        if (severity.ordinal() < (Integer)GeneralOptions.loadOriginal(GeneralOptions.Settings.MINSEVERITY)) {
+        if (severity.ordinal() < (Integer) GeneralOptions.loadOriginal(GeneralOptions.Settings.MINSEVERITY)) {
             return;
         }
 
-        if ((Boolean)GeneralOptions.loadOriginal(GeneralOptions.Settings.DEBUGLOG) == true) {
+        if ((Boolean) GeneralOptions.loadOriginal(GeneralOptions.Settings.DEBUGLOG) == true) {
+            caption = caption != null ? caption : "";
             this.buff.append("<tr>");
-            if (caption != null) {
-                this.buff.append("<td style=\"vertical-align:top\"><b>").append(caption).append("</b></td>");
-            }
+            this.buff.append("<td style=\"vertical-align:top\"><b>").append(caption).append("</b></td>");
             this.buff.append("<td style=\"vertical-align:top\">").append(str).append("</td>");
             this.buff.append("</tr>");
         }
@@ -63,7 +83,7 @@ public class Logger
     }
 
     public void log(Exception ex) {
-        this.log(ex, Severity.EXCEPTION);
+        this.log(ex, Severity.FATAL);
     }
 
     public void log(Exception ex, Severity severity) {

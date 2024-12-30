@@ -1,27 +1,28 @@
 package de.foopara.phpcsmd.option;
 
+import de.foopara.phpcsmd.debug.Logger;
+import java.util.Properties;
 import org.openide.util.Lookup;
 
-public class PhpcsOptions
-{
+public class PhpcsOptions {
 
     public static final String _PREFIX = "phpcsmd.phpcs.";
+    private final Properties properties;
 
     public enum Settings {
-        ACTIVATED   ("activated",    GenericOption.SettingTypes.BOOLEAN, "false"),
-        SCRIPT      ("script",       GenericOption.SettingTypes.STRING,  "/usr/bin/phpcs"),
-        STANDARD    ("standard",     GenericOption.SettingTypes.STRING,  "Zend"),
-        SNIFFS      ("sniffs",       GenericOption.SettingTypes.STRING,  ""),
-        IGNORES     ("ignores",      GenericOption.SettingTypes.STRING,  ""),
-        EXTENSIONS  ("extensions",   GenericOption.SettingTypes.STRING,  ""),
-        TABWIDTH    ("tabwidth",     GenericOption.SettingTypes.INTEGER, "-1"),
-        INIOVERWRITE("inioverwrite", GenericOption.SettingTypes.STRING,  ""),
-        WARNINGS    ("warnings",     GenericOption.SettingTypes.BOOLEAN, "true"),
-        EXTRAS      ("extras",       GenericOption.SettingTypes.BOOLEAN, "false"),
-        XSNIFF      ("sniff.",       GenericOption.SettingTypes.BOOLEAN, "false"),
-        XSNIFFTASK  ("snifftask.",   GenericOption.SettingTypes.BOOLEAN, "false"),
-        STATIC      ("static",       GenericOption.SettingTypes.STRING,  ""),
-        ;
+        ACTIVATED("activated", GenericOption.SettingTypes.BOOLEAN, "false"),
+        SCRIPT("script", GenericOption.SettingTypes.STRING, "/usr/bin/phpcs"),
+        STANDARD("standard", GenericOption.SettingTypes.STRING, "Zend"),
+        SNIFFS("sniffs", GenericOption.SettingTypes.STRING, ""),
+        IGNORES("ignores", GenericOption.SettingTypes.STRING, ""),
+        EXTENSIONS("extensions", GenericOption.SettingTypes.STRING, ""),
+        TABWIDTH("tabwidth", GenericOption.SettingTypes.INTEGER, "-1"),
+        INIOVERWRITE("inioverwrite", GenericOption.SettingTypes.STRING, ""),
+        WARNINGS("warnings", GenericOption.SettingTypes.BOOLEAN, "true"),
+        EXTRAS("extras", GenericOption.SettingTypes.BOOLEAN, "false"),
+        XSNIFF("sniff.", GenericOption.SettingTypes.BOOLEAN, "false"),
+        XSNIFFTASK("snifftask.", GenericOption.SettingTypes.BOOLEAN, "false"),
+        STATIC("static", GenericOption.SettingTypes.STRING, ""),;
 
         private final String key;
 
@@ -48,7 +49,20 @@ public class PhpcsOptions
         }
     }
 
+    public PhpcsOptions(Lookup lkp) {
+        Logger.getInstance().debug("Try load properties");
+        this.properties = GenericOption.loadProperties(lkp);
+    }
 
+    public Object get(PhpcsOptions.Settings key) {
+        String id = _PREFIX + key.getKey();
+        String value = this.properties.getProperty(id, GenericOption._modul().get(id, key.getDefaultValue()));
+        return GenericOption.castValue(value, key.getType());
+    }
+
+    /**
+     * @deprecated since 0.7.0
+     */
     public static Object load(PhpcsOptions.Settings key, Lookup lkp) {
         String val = GenericOption.loadMerged(_PREFIX + key.getKey(), key.getDefaultValue(), lkp);
         return GenericOption.castValue(val, key.getType());
@@ -82,7 +96,7 @@ public class PhpcsOptions
         String val = GenericOption.loadModul(
                 _PREFIX + Settings.XSNIFF.getKey() + name,
                 Settings.XSNIFF.getDefaultValue());
-        return (Boolean)GenericOption.castValue(val, Settings.XSNIFF.getType());
+        return (Boolean) GenericOption.castValue(val, Settings.XSNIFF.getType());
     }
 
     public static void setSniff(String name, boolean opt) {
@@ -95,7 +109,7 @@ public class PhpcsOptions
         String val = GenericOption.loadModul(
                 _PREFIX + Settings.XSNIFFTASK.getKey() + name,
                 Settings.XSNIFFTASK.getDefaultValue());
-        return (Boolean)GenericOption.castValue(val, Settings.XSNIFFTASK.getType());
+        return (Boolean) GenericOption.castValue(val, Settings.XSNIFFTASK.getType());
     }
 
     public static void setSniffTask(String name, boolean opt) {

@@ -15,9 +15,10 @@ import org.openide.util.Lookup;
 
 import de.foopara.phpcsmd.debug.Logger;
 import de.foopara.phpcsmd.option.GeneralOptions;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.util.Exceptions;
 
-public class GenericHelper
-{
+public class GenericHelper {
 
     private static volatile File phpcpdDistractor = null;
 
@@ -34,40 +35,39 @@ public class GenericHelper
 
     public static boolean isDesirableFile(File file, Lookup lkp, boolean filter) {
         if (file == null) {
-            Logger.getInstance().log("is not desired (null)", "", Logger.Severity.USELESS);
+            Logger.getInstance().log("is not desired (null)", "", Logger.Severity.DEBUG);
             return false;
         }
 
         if (!file.exists()) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (does not exist)", "desirableFile", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (does not exist)", "desirableFile", Logger.Severity.DEBUG);
             return false;
         }
         if (!file.canRead()) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (can't read)", "desirableFile", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (can't read)", "desirableFile", Logger.Severity.DEBUG);
             return false;
         }
         if (!file.isFile()) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (not a file)", "desirableFile", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (not a file)", "desirableFile", Logger.Severity.DEBUG);
             return false;
         }
 
         if (filter && GenericHelper.shouldBeIgnored(FileUtil.toFileObject(file))) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (on ignore list)", "desirableFile", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (on ignore list)", "desirableFile", Logger.Severity.DEBUG);
             return false;
         }
 
         Project project = GenericHelper.getProjectFromLookup(lkp);
         if ((project == null
-            || !project.getClass().getCanonicalName().endsWith("php.project.PhpProject"))
-            && (Boolean)GeneralOptions.loadOriginal(GeneralOptions.Settings.SCANINNONPHP) == false
-        ) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (non PHP project)", "desirableFile", Logger.Severity.USELESS);
+                || !project.getClass().getCanonicalName().endsWith("php.project.PhpProject"))
+                && (Boolean) GeneralOptions.loadOriginal(GeneralOptions.Settings.SCANINNONPHP) == false) {
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (non PHP project)", "desirableFile", Logger.Severity.DEBUG);
             return false;
         }
 
         File parent = new File(file.getParent());
         if (!GenericHelper.isDesirableFolder(parent, lkp, filter)) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (parent folder is not desired)", "desirableFile", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (parent folder is not desired)", "desirableFile", Logger.Severity.DEBUG);
             return false;
         }
 
@@ -80,34 +80,33 @@ public class GenericHelper
 
     public static boolean isDesirableFolder(File file, Lookup lkp, boolean filter) {
         if (file == null) {
-            Logger.getInstance().log("is not desired (null)", "desirableFolder", Logger.Severity.USELESS);
+            Logger.getInstance().log("is not desired (null)", "desirableFolder", Logger.Severity.DEBUG);
             return false;
         }
 
         if (!file.exists()) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (does not exist)", "desirableFolder", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (does not exist)", "desirableFolder", Logger.Severity.DEBUG);
             return false;
         }
         if (!file.canRead()) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (is not readable)", "desirableFolder", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (is not readable)", "desirableFolder", Logger.Severity.DEBUG);
             return false;
         }
         if (!file.isDirectory()) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (no such directory)", "desirableFolder", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (no such directory)", "desirableFolder", Logger.Severity.DEBUG);
             return false;
         }
 
         if (filter && GenericHelper.shouldBeIgnored(file, lkp)) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (ignored)", "desirableFolder", Logger.Severity.USELESS);
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (ignored)", "desirableFolder", Logger.Severity.DEBUG);
             return false;
         }
 
         Project project = GenericHelper.getProjectFromLookup(lkp);
         if ((project == null
-            || !project.getClass().getCanonicalName().endsWith("php.project.PhpProject"))
-            && (Boolean)GeneralOptions.loadOriginal(GeneralOptions.Settings.SCANINNONPHP) == false
-        ) {
-            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (non PHP project)", "desirable folder", Logger.Severity.USELESS);
+                || !project.getClass().getCanonicalName().endsWith("php.project.PhpProject"))
+                && (Boolean) GeneralOptions.loadOriginal(GeneralOptions.Settings.SCANINNONPHP) == false) {
+            Logger.getInstance().log(file.getAbsolutePath() + " is not desired (non PHP project)", "desirable folder", Logger.Severity.DEBUG);
             return false;
         }
 
@@ -144,15 +143,15 @@ public class GenericHelper
         boolean retMatched;
         String pattern;
 
-        if ((Boolean)GeneralOptions.load(GeneralOptions.Settings.INCLUDESTRATEGY, lkp)) {
+        if ((Boolean) GeneralOptions.load(GeneralOptions.Settings.INCLUDESTRATEGY, lkp)) {
             if (file.isDirectory()) {
                 return false; // folders can never match the regex so they have to be parsed
             }
             retMatched = false;
-            pattern = (String)GeneralOptions.load(GeneralOptions.Settings.INCLUDE, lkp);
+            pattern = (String) GeneralOptions.load(GeneralOptions.Settings.INCLUDE, lkp);
         } else {
             retMatched = true;
-            pattern = (String)GeneralOptions.load(GeneralOptions.Settings.IGNORE, lkp);
+            pattern = (String) GeneralOptions.load(GeneralOptions.Settings.IGNORE, lkp);
         }
 
         if (pattern.trim().length() > 0) {
@@ -161,7 +160,7 @@ public class GenericHelper
             boolean found = m.find();
 
             if (found) {
-                Logger.getInstance().logPre(file.getAbsolutePath() + " matches " + pattern + " " + retMatched, "ignore", Logger.Severity.EXCEPTION);
+                Logger.getInstance().logPre(file.getAbsolutePath() + " matches " + pattern + " " + retMatched, "ignore", Logger.Severity.FATAL);
                 return retMatched;
             }
         }
@@ -211,33 +210,57 @@ public class GenericHelper
         Project ret = lkp.lookup(Project.class);
         //Try getting it from Dataobject
         if (ret == null) {
+            Logger.getInstance().debug("Project not lookup", "getProjectFromLookup");
             DataObject dataObject = lkp.lookup(DataObject.class);
             if (dataObject != null) {
                 FileObject primary = dataObject.getPrimaryFile();
+                Logger.getInstance().debug("DataObject Primary File: " + primary.getPath(), "getProjectFromLookup");
                 ret = FileOwnerQuery.getOwner(primary);
+                if (ret != null) {
+                    Logger.getInstance().debug("DataObject for project: " + ret.getProjectDirectory().getPath(), "getProjectFromLookup");
+                }
+            }
+            if (ret == null) {
+                Logger.getInstance().debug("DataObject for project not lookup", "getProjectFromLookup");
             }
         }
+        Logger.getInstance().debug("Project path is " + ret.getProjectDirectory().getPath(), "getProjectFromLookup");
+
+        FileObject fo = ret.getProjectDirectory();
+
+        while (ProjectManager.getDefault().isProject(fo.getParent())) {
+            fo = fo.getParent();
+        }
+
+        Logger.getInstance().debug("Project path maybe " + fo.getPath(), "getProjectFromLookup");
+
+        Project projectMaybe;
+        try {
+            projectMaybe = ProjectManager.getDefault().findProject(fo);
+            ret = projectMaybe;
+            Logger.getInstance().debug("Real project path is " + projectMaybe.getProjectDirectory().getPath(), "getProjectFromLookup");
+        } catch (IOException | IllegalArgumentException ex) {
+            Logger.getInstance().debug("Project not found in directory " + fo.getPath(), "getProjectFromLookup");
+        }
+
         return ret;
     }
 
     public static Lookup getFileLookup(FileObject fo) {
         try {
             if (fo == null
-                || fo.isVirtual()
-                || DataObject.find(fo).getLookup() == null
-                || !(
-                    GenericHelper.isDesirableFile(FileUtil.toFile(fo), DataObject.find(fo).getLookup(), false)
-                    || GenericHelper.isDesirableFolder(FileUtil.toFile(fo), DataObject.find(fo).getLookup(), false)
-                    )
-            ) {
+                    || fo.isVirtual()
+                    || DataObject.find(fo).getLookup() == null
+                    || !(GenericHelper.isDesirableFile(FileUtil.toFile(fo), DataObject.find(fo).getLookup(), false)
+                    || GenericHelper.isDesirableFolder(FileUtil.toFile(fo), DataObject.find(fo).getLookup(), false))) {
                 if (fo != null) {
-                    Logger.getInstance().logPre("Can not find lookup for " + fo.getPath(), "", Logger.Severity.USELESS);
+                    Logger.getInstance().logPre("Can not find lookup for " + fo.getPath(), "", Logger.Severity.DEBUG);
                 }
                 return null;
             }
         } catch (Exception ex) {
             if (ex instanceof IOException) {
-                Logger.getInstance().log(ex, Logger.Severity.USELESS);
+                Logger.getInstance().log(ex, Logger.Severity.DEBUG);
             } else {
                 Logger.getInstance().log(ex);
             }

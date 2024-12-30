@@ -83,11 +83,11 @@ public class RescanThread extends Thread
     public void qarun() {
         this.count(this.fo, -1);
         this.component.setRescanDone();
-        Logger.getInstance().logPre("finished", "RescanThread", Logger.Severity.USELESS);
+        Logger.getInstance().logPre("finished", "RescanThread", Logger.Severity.DEBUG);
     }
 
     private int count(FileObject f, int fc) {
-        Logger.getInstance().logPre("starting " + f.getPath(), "RescanThread", Logger.Severity.USELESS);
+        Logger.getInstance().logPre("starting " + f.getPath(), "RescanThread", Logger.Severity.DEBUG);
         boolean firstRun = (fc == -1);
         if (fc < 0) {
             fc = 0;
